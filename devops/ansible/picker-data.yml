@@ -1,0 +1,9 @@
+---
+
+- name: Load Data
+  hosts:
+    - tag_class_app
+
+  tasks:
+    - name: Gather Ticker Data
+      django_manage: command=gather_ticker_data app_path={{ project_path }}/picker virtualenv={{venv_path}}

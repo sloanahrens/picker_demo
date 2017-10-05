@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+    <div class="jumbotron">
+      <div class="container">
+          <h2>Picker</h2>
+          <p>
+              Picker is a toy stock-picker app. It uses an 86-week moving average of scaled adjusted close (adjusted closing price divided by an index value, currently SPY) as a decision boundary for <em>buy</em> versus <em>sell</em> classifications.</h4>
+          </p>
+          <p><strong><em>DISCLAIMER: Don't use Picker to make investment decisions! (Seriously)</em></strong></p>
+          <p>Github repo: <a href="https://github.com/sloanahrens/picker_demo" target="_blank">https://github.com/sloanahrens/picker_demo</a></p>
+          <div id="error_message" style="display:none;" class="alert alert-danger">add ticker error</div>
+          <div id="success_message" style="display:none;" class="alert alert-success">add ticker success</div>
+      </div>
+    </div>
+
+    <div class='container'>
+
+{#        {% if messages %}#}
+{#            {% for message in messages %}#}
+{#                <h3>{{ message }}</h3>#}
+{#            {% endfor %}#}
+{#        {% endif %}#}
+{#        <h3>test message</h3>#}
+
+    <div class="row">
+      <div class="col-xs-2">
+          <form id="add_ticker_form">
+            <input type="text" style="width:80%" class="form-control" id="add_ticker_text" placeholder="TICKER">
+            <button type="submit" id="add_ticker_btn" style="width:80%" class="btn btn-default">
+              Add Ticker
+            </button>
+          </form>
+          <h4 style="margin-bottom: 5px;">Tickers Loaded</h4>
+          <ul id="tickerlist"></ul>
+      </div>
+      <div class="col-xs-10">
+          <h3 style="margin-top: 0;">Latest data date: <span id="latest_date"></span></h3>
+          <div class="chart-cont">
+            <div id="chart1stats" class="stats pull-right">*</div>
+            <div id='chart1' class="chart"></div>
+            <div class='marker' style="display:none;"></div>
+            <div style="clear:both;"></div>
+          </div>
+          <button class="unzoom btn btn-default pull-left">
+            Reset Zoom
+          </button>
+          <div class="chart-cont">
+            <div id="chart2stats" class="stats pull-right">*</div>
+            <div id='chart2' class="chart"></div>
+            <div class='marker' style="display:none;"></div>
+            <div style="clear:both;"></div>
+          </div>
+          <hr>
+          <div>Filter: <span id="filter_rec"></span></div>
+        <div class="row">
+          <div class="col-xs-5">
+            <h3>Buy (<span id="buy_count"></span>)</h3>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>sym (gf)</th>
+                  <th>ac</th>
+                  <th>sac</th>
+                  <th>sacma</th>
+                  <th>ratio</th>
+                </tr>
+              </thead>
+            </table>
+          </div>
+          <div class="col-xs-5">
+            <h3>Sell (<span id="sell_count"></span>)</h3>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>sym (gf)</th>
+                  <th>ac</th>
+                  <th>sac</th>
+                  <th>sacma</th>
+                  <th>ratio</th>
+                </tr>
+              </thead>
+            </table>
+          </div>
+        </div>
+        <div class="row" style="height: 500px; overflow:auto;">
+          <div class="col-xs-5">
+            <table class="table">
+              <tbody id="buy_table"></tbody>
+            </table>
+          </div>
+          <div class="col-xs-5">
+            <table class="table">
+              <tbody id="sell_table"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    </div>
+
+{% endblock %}
+
+{% block extra_js %}
+    <script type="text/javascript" src="{% static 'js/lib/jquery.flot.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/lib/jquery.flot.selection.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/picker.js' %}"></script>
+{% endblock %}

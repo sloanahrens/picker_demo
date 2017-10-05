@@ -1,0 +1,49 @@
+---
+- name: Set Up VPN
+  become: yes
+  hosts:
+    - tag_class_vpn
+
+  vars:
+    openvpn_host: "{{hostvars[inventory_hostname].ec2_dns_name}}"
+    openvpn_server: 10.9.0.0 255.255.255.0
+    openvpn_use_pam: yes
+    openvpn_clients:
+      - "pickerVPN_{{vpn_name}}"
+
+    openvpn_key_country: US
+    openvpn_key_province: AR
+    openvpn_key_city: Fayetteville
+    openvpn_key_org: AhrensSoftware
+    openvpn_key_email: sloan.ahrens@gmail.com
+    openvpn_key_size: 1024
+
+    openvpn_use_pam_users:
+      - { name: pickervpn, password: "{{vpn_password}}" }
+
+  roles:
+    - { name: Stouts.openvpn }
+    - { name: aws-dns-forwarder }
+
+  tasks:
+    - name: Setup iptables rule for nat
+      shell: iptables -t nat -A POSTROUTING -s 10.9.0.0/24 -o eth0 -j MASQUERADE
+
+    - name: Add iptables rule for VPN NAT to /etc/rc.local
+      lineinfile: "dest=/etc/rc.local insertbefore='^exit 0' line='iptables -t nat -A POSTROUTING -s 10.9.0.0/24 -o eth0 -j MASQUERADE'"
+
+    - name: Add push route rule to openvpn config
+      lineinfile: "dest=/etc/openvpn/server.conf line='push \"route 10.{{ip_class_b}}.0.0 255.255.0.0\"'"
+
+    - name: Add push DNS rule to openvpn config
+      lineinfile: "dest=/etc/openvpn/server.conf line='push \"dhcp-option DNS {{hostvars[inventory_hostname].ec2_private_ip_address}}\"'"
+
+    - name: Add push DNS rule to openvpn config
+      lineinfile: "dest=/etc/openvpn/server.conf line='push \"dhcp-option DNS 8.8.8.8\"'"
+
+  post_tasks:
+    - name: Build zip to download
+      shell: zip /etc/openvpn/keys/{{openvpn_clients[0]}}.zip /etc/openvpn/keys/pickerVPN_us-east-2.* /etc/openvpn/keys/ca.crt
+
+    - name: Download VPN zip
+      fetch: src=/etc/openvpn/keys/{{openvpn_clients[0]}}.zip flat=yes dest=~/Downloads/{{openvpn_clients[0]}}.zip

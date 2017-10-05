@@ -1,0 +1,8 @@
+---
+
+- name: Picker App
+  hosts:
+    - tag_class_app
+
+  roles:
+    - { role: picker-app, become: yes }

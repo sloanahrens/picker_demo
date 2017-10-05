@@ -1,0 +1,7 @@
+/* Terraform IAM Account */
+aws_access_key = "ACCESS_KEY"
+aws_secret_key = "SECRET_KEY"
+
+aws_region="us-east-2"
+
+ip_class_b="20"

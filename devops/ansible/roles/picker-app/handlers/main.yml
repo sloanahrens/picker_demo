@@ -1,0 +1,11 @@
+---
+
+- name: Restart Supervisor
+  become: yes
+  supervisorctl: name=picker state=restarted
+
+- name: Restart Nginx
+  become: yes
+  service:
+    name: nginx
+    state: restarted

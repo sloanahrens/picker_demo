@@ -1,0 +1,162 @@
+---
+
+##########
+# Update Apt Repositories
+#
+- name: Update Apt Repositories
+  apt: update_cache=yes
+
+##########
+# Install Picker app dependencies
+#
+- name: Picker apt dependencies
+  apt: name={{ item }}
+  with_items:
+    - nginx
+
+##########
+#
+#
+- name: Create app run directory
+  file: path=/srv/run owner=pickeradmin mode=0775 state=directory
+
+##########
+#
+#
+- name: "Git Checkout Picker - {{repository_url}}@{{deploy_branch}}"
+  git: repo={{repository_url}} dest={{project_path}} version={{deploy_branch}} force=yes
+  register: git_checkout
+  notify:
+    - Restart Supervisor
+
+##########
+#
+#
+- name: Upload uwsqi config
+  template: src=uwsgi.ini dest={{project_path}}/uwsgi.ini
+  notify: Restart Supervisor
+
+##########
+#
+#
+- name: Upload supervisor configuration
+  template: src=supervisor.conf dest=/etc/supervisor/conf.d/picker.conf
+  notify: Restart Supervisor
+
+##########
+#
+#
+- name: Create bin directory
+  file: path={{project_path}}/bin owner=pickeradmin mode=0775 state=directory
+
+##########
+#
+#
+- name: Upload start.sh
+  template: src=start.sh dest={{project_path}}/bin/start.sh owner=pickeradmin mode=0755
+  notify:
+    - Restart Nginx
+    - Restart Supervisor
+
+##########
+#
+#
+- name: Remove default nginx conf
+  file: path=/etc/nginx/sites-enabled/default state=absent
+
+##########
+#
+#
+- name: Upload dev nginx config
+  template: src=nginx.conf dest=/etc/nginx/sites-enabled/picker.conf
+  notify:
+    - Restart Supervisor
+    - Restart Nginx
+
+# ##########
+# #
+# #
+# - name: Upload aws nginx config
+#   template: src=nginx-aws.conf dest=/etc/nginx/sites-enabled/mb-portal.conf
+#   notify:
+#     - Restart Supervisor
+#     - Restart Nginx
+#   when: is_aws
+
+##########
+#
+#
+- name: Upload App configuration
+  template: src=local_django_settings.py dest={{project_path}}/picker/picker/settings/settings_local.py
+  notify:
+    - Restart Supervisor
+
+# ##########
+# #
+# #
+# - name: Install App Initial pip Requirements
+#   pip: name={{item}} virtualenv={{venv_path}} virtualenv_python=python3.6
+#   with_items:
+#     - enum34==1.1.6
+#     - funcsigs==1.0.2
+#     - llvmlite==0.18.0
+#     - numpy==1.12.1
+#     - numba==0.33.0
+
+##########
+# #
+# #
+# - name: Set project dir permissions
+#   file: dest={{project_path}} state=directory
+#        owner=mbadmin group=mbadmin
+#        recurse=yes
+#   become: yes
+
+##########
+#
+#
+- name: Install App Specific pip Requirements
+  pip: requirements={{project_path}}/requirements.txt
+    virtualenv={{venv_path}}
+  notify:
+    - Restart Supervisor
+
+
+# ##########
+# # Note: Only run once per deploy
+# #
+# - name: Collect Static Files
+#   django_manage: command="collectstatic --noinput" app_path={{ app_path }} virtualenv={{venv_path}}
+#   run_once: true
+#   environment:
+#     - COMPRESS_ENABLED: true
+#   when: not is_docker
+
+# ##########
+# # Note: Only run once per deploy
+# #
+# - name: Create superuser
+#   shell: >
+#     echo "from django.contrib.auth.models import User; User.objects.create_superuser('{{admin_user}}', '{{admin_email}}', '{{admin_password}}')" | {{venv_path}}/bin/python {{project_path}}/mbportal/manage.py shell
+#   ignore_errors: True
+#   run_once: True
+#   when: not is_docker
+
+
+- name: Cron Job to Update Picker Data
+  cron:
+    name: "update picker data"
+    minute: "0"
+    hour: "0,6,12,18"
+    job: "{{venv_path}}/bin/python {{project_path}}/picker/manage.py gather_ticker_data"
+
+
+# - name: Cron Job to Restart ES once a day
+#   cron:
+#     name: "restart ES"
+#     minute: "0"
+#     hour: "5"
+#     job: "/etc/init.d/elasticsearch restart"
+
+
+

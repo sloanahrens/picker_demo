@@ -1,0 +1,71 @@
+---
+- name: "Picker Queue"
+  become: yes
+  hosts:
+    - tag_class_queue
+  vars_files:
+    - group_vars/all.yml
+  vars:
+    rabbitmq_tcp_address: 0.0.0.0
+    rabbitmq_tcp_port: "{{rabbit_port}}"
+    # rabbitmq_vhosts:
+    #   - "picker_vhost_production"
+    #   - "picker_vhost_staging"
+    rabbitmq_vhosts:
+      - name:     picker_vhost_production
+        node:     production             # Optional, defaults to "rabbit"
+      - name:     picker_vhost_staging
+        node:     staging             # Optional, defaults to "rabbit"
+    rabbitmq_users:
+      - user: "{{rabbit_user}}"
+        password: "{{rabbit_password}}"
+      - user: "{{rabbit_admin_user}}"
+        password: "{{rabbit_admin_password}}"
+        tags: administrator
+
+    redis_bind: 0.0.0.0
+
+  tasks:
+    ##########
+    # Set Hostname
+    #
+    - name: Set hostname
+      hostname: name="queue.intmb.com"
+
+    ##########
+    # Update Apt Repositories
+    #
+    - name: Update Apt Repositories
+      apt: update_cache=yes
+
+    ##########
+    # Install queue dependencies
+    #
+    - name: Common apt dependencies
+      apt: name={{ item }}
+      with_items:
+        - redis-server
+
+  ##########
+  # Setup redis and rabbitmq via galaxy roles
+  #
+  roles:
+    - rabbitmq
+
+  post_tasks:
+    - name: Enable rabbit management api
+      shell: rabbitmq-plugins enable rabbitmq_management
+      become: yes
+
+    - rabbitmq_vhost: name="{{item.name}}" state=present
+      with_items: "{{rabbitmq_vhosts}}"
+
+    - rabbitmq_user: user={{rabbit_user}}
+                     password={{rabbit_password}}
+                     vhost="{{item.name}}"
+                     configure_priv=.*
+                     read_priv=.*
+                     write_priv=.*
+                     tags=administrator
+                     state=present
+      with_items: "{{rabbitmq_vhosts}}"

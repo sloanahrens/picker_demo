@@ -1,0 +1,6 @@
+{
+  "aws_stack_name": "production",
+  "instance_size": "t2.micro",
+  "master_vpc_id": "vpc-b0e906d6",
+  "subnet_id": "subnet-55db6578"
+}

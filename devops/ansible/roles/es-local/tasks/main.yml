@@ -1,0 +1,44 @@
+##########
+# Update Apt Repositories
+#
+- name: Update Apt Repositories
+  apt: update_cache=yes
+  become: yes
+
+- name: Purge existing openjdk
+  apt: 
+    name: openjdk
+    state: absent
+    purge: yes
+  become: yes
+
+- name: Install Open JDK 8
+  apt: 
+    name: openjdk-8-jdk
+  become: yes
+
+- name: Install ES 1 (apt key)
+  become: yes
+  shell: wget -qO - https://packages.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
+
+- name: Install ES 2 (debian pkg)
+  become: yes
+  shell: echo "deb http://packages.elastic.co/elasticsearch/2.x/debian stable main" | sudo tee -a /etc/apt/sources.list.d/elasticsearch-2.x.list
+
+- name: Update Apt Repositories
+  apt: update_cache=yes
+  become: yes
+
+- name: Install ES 3 (apt install)
+  apt: 
+    name: elasticsearch
+  become: yes
+
+- name: Install ES 4 (service)
+  become: yes
+  command: update-rc.d elasticsearch defaults 95 10
+
+- name: Install ES 5 (start)
+  become: yes
+  command: /etc/init.d/elasticsearch start
+

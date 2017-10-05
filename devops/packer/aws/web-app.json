@@ -1,0 +1,90 @@
+{
+  "variables": {
+    "aws_access_key": null,
+    "aws_secret_key": null,
+    "region": null,
+    "ssh_username": "ubuntu",
+    "repo_branch": "master",
+    "mode": "app",
+    "instance_size": null,
+    "aws_stack_name": null,
+    "master_vpc_id": null,
+    "subnet_id": null
+  },
+  "builders": [
+    {
+      "type": "amazon-ebs",
+      "access_key": "{{user `aws_access_key`}}",
+      "secret_key": "{{user `aws_secret_key` }}",
+      "region": "{{user `region`}}",
+      "vpc_id": "{{user `master_vpc_id`}}",
+      "subnet_id": "{{user `subnet_id`}}",
+      "source_ami_filter": {
+        "filters": {
+        "virtualization-type": "hvm",
+        "name": "*ubuntu-xenial-16.04-amd64-server-*",
+        "root-device-type": "ebs"
+        },
+        "owners": ["099720109477"],
+        "most_recent": true
+      },
+      "instance_type": "{{user `instance_size`}}",
+      "ssh_username": "{{user `ssh_username`}}",
+      "ami_name": "MB {{user `mode`}} {{user `region`}} {{user `aws_stack_name`}} {{timestamp}}"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "execute_command": "echo {{user `ssh_username`}} | {{ .Vars }} sudo -E -S sh '{{ .Path }}'",
+      "inline": [
+        "sleep 30",
+        "mkdir -p /ops",
+        "chmod a+w /ops"
+      ]
+    },
+    {
+      "type": "shell",
+      "execute_command": "echo {{user `ssh_username`}} | {{ .Vars }} sudo -E -S sh '{{ .Path }}'",
+      "inline": [
+        "apt-get install -y software-properties-common",
+        "apt-add-repository ppa:ansible/ansible",
+        "apt-get -y update",
+        "apt-get -y install ansible"
+      ]
+    },
+    {
+      "type": "file",
+      "source": "keys/bitbucket.pem",
+      "destination": "/ops/bitbucket.pem"
+    },
+    {
+      "type": "file",
+      "source": "keys/bitbucket.pub",
+      "destination": "/ops/bitbucket.pub"
+    },
+    {
+      "type": "shell",
+      "scripts": [
+        "packer/scripts/setup_mbdevops.sh"
+      ],
+      "execute_command": "chmod +x {{ .Path }}; {{ .Vars }} sudo -u ubuntu -i '{{ .Path }}'"
+    },
+    {
+      "type": "shell",
+      "execute_command": "echo {{user `ssh_username`}} | {{ .Vars }} sudo -E -S sh '{{ .Path }}'",
+      "inline": [
+        "echo '' >> /ops/mbdevops/group_vars/{{user `aws_stack_name`}}.yml",
+        "echo 'portal_deploy_branch: {{user `portal_branch`}}' >> /ops/mbdevops/group_vars/{{user `aws_stack_name`}}.yml",
+        "echo 'solver_deploy_branch: {{user `solver_branch`}}' >> /ops/mbdevops/group_vars/{{user `aws_stack_name`}}.yml",
+        "ansible-playbook -s -i 'localhost,' /ops/mbdevops/mb-packer-{{user `mode`}}.yml --extra-vars 'ec2_region={{user `region`}} stack_name={{user `aws_stack_name`}} portal_deploy_branch={{user `portal_branch`}} solver_deploy_branch={{user `solver_branch`}}'"
+      ]
+    }
+  ],
+  "post-processors": [
+    {
+      "type": "manifest",
+      "output": "packer-manifest-{{user `region`}}-{{user `stack`}}-{{user `mode`}}.json"
+    }
+  ]
+}

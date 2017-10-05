@@ -1,0 +1,32 @@
+#tickerlist {
+  list-style-type: none;
+  font-size: 0.85em;
+  line-height: 1.5em;
+  padding-left: 5px;
+}
+
+.chart-cont {
+  position:relative;
+  width:800px;
+}
+
+.chart {
+  float:left;
+  width:800px;
+  height:300px;
+}
+
+.marker {
+  position:absolute;
+  z-index:1000;
+  border-left: 1px solid black;
+  bottom: 0;
+  height: 300px;
+  width:  1px;
+}
+
+.stats {
+  font-size: 0.8em;
+  height: 1.5em;
+  display: inline-block;
+}

@@ -1,0 +1,17 @@
+---
+  ##########
+  # Install Dependencies
+  #
+  - name: Dependencies
+    apt: name={{ item }} update_cache=yes
+    with_items:
+      - bind9
+      - bind9utils
+      - bind9-doc
+
+  ##########
+  #
+  #
+  - name: Upload named.conf.options
+    template: src=named.conf.options dest=/etc/bind/named.conf.options
+    notify: Restart Bind

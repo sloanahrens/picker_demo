@@ -1,0 +1,86 @@
+---
+##########
+# Update Apt Repositories
+#
+- name: Update Apt Repositories
+  apt: update_cache=yes
+
+- name: Update apt configuration
+  shell: dpkg --configure -a
+
+##########
+# Install common dependencies
+#
+- name: Common apt dependencies
+  apt: name={{ item }} force=yes
+  with_items:
+    - gcc
+    - make
+    - automake
+    - libtool
+    - wget
+    - htop
+    - unzip
+    - automake
+    - autoconf
+    - python-dev
+    - python-pip
+    - zlib1g
+    - zlib1g-dev
+    - libedit2
+    - libedit-dev
+    - git
+    - libpq-dev
+    - libncurses5-dev
+    - build-essential
+    - g++
+    - liblapack-dev
+    - gfortran
+    - supervisor
+    - openssh-client
+    - libssl-dev
+
+- name: Start Supervisor
+  service: name=supervisor state=started
+
+##########
+# Install common pip dependencies
+#
+- name: Common pip dependencies
+  pip: name={{ item }}
+  with_items:
+    - virtualenv
+    - requests
+
+##########
+# Create a shared `pickeradmin` user
+#
+- name: Create pickeradmin user
+  user: name=pickeradmin generate_ssh_key=yes state=present password="$(openssl passwd -in /dev/urandom | head -1)"
+
+# ##########
+# # Create .ssh directory for `mbadmin` user
+# #
+# - name: Create ~/.ssh directories if do not exist
+#   file: path=/home/mbadmin/.ssh owner=mbadmin group=mbadmin mode=0700 state=directory
+
+# # ##########
+# # # Add `mbadmin` user to sudoers file
+# # #
+# # - name: Sudoers | update sudoers file and validate
+# #   lineinfile: 'dest=/etc/sudoers line="mbadmin ALL=(ALL) NOPASSWD: ALL" regexp="^mbadmin" state=present'
+
+# ##########
+# # Add shared bitbucket key pub file to authorized_keys for `mbadmin` user
+# #
+# - name: Install SSH authorized key
+#   authorized_key: >
+#     user=mbadmin
+#     key="{{ lookup('file', 'keys/bitbucket.pub') }}"
+#     state=present
+
+# ##########
+# # Add bitbucket shared key to .ssh folder on `mbadmin` user
+# #
+# - name: Upload shared bitbucket pem file
+#   copy: src=keys/bitbucket.pem dest=/home/mbadmin/.ssh/bitbucket.pem mode=0600

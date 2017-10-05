@@ -1,0 +1,6 @@
+{
+  "instance_size": "t2.micro",
+  "master_vpc_id": "vpc-40380429",
+  "subnet_id": "subnet-b8c08dc3",
+  "ip_class_b": "20"
+}

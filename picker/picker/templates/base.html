@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+  <head>
+    <title>{% block page_title %}Picker Demo{% endblock %}</title>
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+
+
+    <link rel="stylesheet" type="text/css" href="{% static 'css/app.css' %}">
+
+    <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <style type="text/css">
+    </style>
+
+  </head>
+  <body>
+
+    {% block content %}<div>Base Template</div>{% endblock %}
+
+    <script type="text/javascript">
+      $AJAX_ENDPOINT = "{{ endpoint }}";
+      $USERNAME = null;
+      $PASSWORD = null;
+    </script>
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
+
+{#    <script type="text/javascript" src="{% static 'js/jquery_django_csrf.js' %}"></script>#}
+
+    {% block extra_js %}{% endblock %}
+
+
+  </body>
+</html>
+
+

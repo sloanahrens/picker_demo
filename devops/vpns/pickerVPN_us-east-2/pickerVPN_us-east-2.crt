@@ -1,0 +1,75 @@
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number: 2 (0x2)
+    Signature Algorithm: sha256WithRSAEncryption
+        Issuer: C=US, ST=AR, L=Fayetteville, O=AhrensSoftware, OU=MyOrganizationalUnit, CN=AhrensSoftware CA/name=EasyRSA/emailAddress=sloan.ahrens@gmail.com
+        Validity
+            Not Before: Oct  5 16:41:53 2017 GMT
+            Not After : Oct  3 16:41:53 2027 GMT
+        Subject: C=US, ST=AR, L=Fayetteville, O=AhrensSoftware, OU=MyOrganizationalUnit, CN=pickerVPN_us-east-2/name=EasyRSA/emailAddress=sloan.ahrens@gmail.com
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                Public-Key: (1024 bit)
+                Modulus:
+                    00:b2:a8:db:83:38:26:1d:d5:1f:61:8d:f3:ac:c8:
+                    e9:fc:f3:e7:a3:44:7b:b7:45:c1:b7:79:6c:02:d4:
+                    22:56:b6:69:26:12:51:18:35:3e:6f:da:74:09:29:
+                    48:64:c7:72:08:e8:34:53:61:d3:07:78:a2:21:35:
+                    9b:ae:df:ac:e6:b6:c4:4c:b3:91:40:44:f2:92:d1:
+                    b0:00:91:f5:88:ab:41:04:82:3e:f4:60:43:6a:e7:
+                    d6:98:9c:f1:b4:15:8a:ca:21:ee:0e:ea:9c:a8:68:
+                    d8:05:30:90:07:10:d0:ae:46:fc:7f:63:48:0f:70:
+                    e2:d0:0d:f0:9c:90:46:d0:7b
+                Exponent: 65537 (0x10001)
+        X509v3 extensions:
+            X509v3 Basic Constraints: 
+                CA:FALSE
+            Netscape Comment: 
+                Easy-RSA Generated Certificate
+            X509v3 Subject Key Identifier: 
+                07:30:71:C7:9D:28:38:3F:93:31:57:69:26:D9:F4:C3:29:38:B5:0C
+            X509v3 Authority Key Identifier: 
+                keyid:A4:F6:CA:D8:30:96:B4:5B:B7:A1:42:F9:48:0B:D5:3F:8C:9E:B3:41
+                DirName:/C=US/ST=AR/L=Fayetteville/O=AhrensSoftware/OU=MyOrganizationalUnit/CN=AhrensSoftware CA/name=EasyRSA/emailAddress=sloan.ahrens@gmail.com
+                serial:81:22:5E:80:14:E2:6B:87
+
+            X509v3 Extended Key Usage: 
+                TLS Web Client Authentication
+            X509v3 Key Usage: 
+                Digital Signature
+    Signature Algorithm: sha256WithRSAEncryption
+         9b:3e:74:ab:fd:25:2b:ff:be:9a:3a:76:41:9e:0b:1c:98:8f:
+         8e:d9:bb:20:b6:92:b0:d4:dc:8f:fe:8a:6f:62:3f:f5:99:5c:
+         b7:18:32:1d:ba:25:36:0c:6a:fb:b1:33:73:9a:0c:70:ec:94:
+         d8:ca:5d:99:ec:a6:bc:a6:dd:34:8e:75:79:a2:74:5d:99:e8:
+         a0:18:09:33:92:1d:a6:9b:98:0d:ab:14:5e:2a:20:e1:1a:35:
+         47:6d:c8:88:c7:3d:a8:39:a6:23:16:b3:52:a3:9e:92:30:b7:
+         54:ec:86:ad:6c:08:ab:1c:78:f2:9a:60:8b:70:1a:41:9d:d3:
+         90:10
+-----BEGIN CERTIFICATE-----
+MIIEbTCCA9agAwIBAgIBAjANBgkqhkiG9w0BAQsFADCBvjELMAkGA1UEBhMCVVMx
+CzAJBgNVBAgTAkFSMRUwEwYDVQQHEwxGYXlldHRldmlsbGUxFzAVBgNVBAoTDkFo
+cmVuc1NvZnR3YXJlMR0wGwYDVQQLExRNeU9yZ2FuaXphdGlvbmFsVW5pdDEaMBgG
+A1UEAxMRQWhyZW5zU29mdHdhcmUgQ0ExEDAOBgNVBCkTB0Vhc3lSU0ExJTAjBgkq
+hkiG9w0BCQEWFnNsb2FuLmFocmVuc0BnbWFpbC5jb20wHhcNMTcxMDA1MTY0MTUz
+WhcNMjcxMDAzMTY0MTUzWjCBwDELMAkGA1UEBhMCVVMxCzAJBgNVBAgTAkFSMRUw
+EwYDVQQHEwxGYXlldHRldmlsbGUxFzAVBgNVBAoTDkFocmVuc1NvZnR3YXJlMR0w
+GwYDVQQLExRNeU9yZ2FuaXphdGlvbmFsVW5pdDEcMBoGA1UEAxQTcGlja2VyVlBO
+X3VzLWVhc3QtMjEQMA4GA1UEKRMHRWFzeVJTQTElMCMGCSqGSIb3DQEJARYWc2xv
+YW4uYWhyZW5zQGdtYWlsLmNvbTCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEA
+sqjbgzgmHdUfYY3zrMjp/PPno0R7t0XBt3lsAtQiVrZpJhJRGDU+b9p0CSlIZMdy
+COg0U2HTB3iiITWbrt+s5rbETLORQETyktGwAJH1iKtBBII+9GBDaufWmJzxtBWK
+yiHuDuqcqGjYBTCQBxDQrkb8f2NID3Di0A3wnJBG0HsCAwEAAaOCAXUwggFxMAkG
+A1UdEwQCMAAwLQYJYIZIAYb4QgENBCAWHkVhc3ktUlNBIEdlbmVyYXRlZCBDZXJ0
+aWZpY2F0ZTAdBgNVHQ4EFgQUBzBxx50oOD+TMVdpJtn0wyk4tQwwgfMGA1UdIwSB
+6zCB6IAUpPbK2DCWtFu3oUL5SAvVP4yes0GhgcSkgcEwgb4xCzAJBgNVBAYTAlVT
+MQswCQYDVQQIEwJBUjEVMBMGA1UEBxMMRmF5ZXR0ZXZpbGxlMRcwFQYDVQQKEw5B
+aHJlbnNTb2Z0d2FyZTEdMBsGA1UECxMUTXlPcmdhbml6YXRpb25hbFVuaXQxGjAY
+BgNVBAMTEUFocmVuc1NvZnR3YXJlIENBMRAwDgYDVQQpEwdFYXN5UlNBMSUwIwYJ
+KoZIhvcNAQkBFhZzbG9hbi5haHJlbnNAZ21haWwuY29tggkAgSJegBTia4cwEwYD
+VR0lBAwwCgYIKwYBBQUHAwIwCwYDVR0PBAQDAgeAMA0GCSqGSIb3DQEBCwUAA4GB
+AJs+dKv9JSv/vpo6dkGeCxyYj47ZuyC2krDU3I/+im9iP/WZXLcYMh26JTYMavux
+M3OaDHDslNjKXZnsprym3TSOdXmidF2Z6KAYCTOSHaabmA2rFF4qIOEaNUdtyIjH
+Pag5piMWs1KjnpIwt1Tshq1sCKscePKaYItwGkGd05AQ
+-----END CERTIFICATE-----

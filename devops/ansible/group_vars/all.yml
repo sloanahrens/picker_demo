@@ -1,0 +1,26 @@
+---
+ansible_user: ubuntu
+
+repository_url: https://github.com/sloanahrens/picker_demo.git
+deploy_branch: master
+
+app_port: 8001
+
+app_debug: True
+
+project_path: /srv/picker-app
+
+venv_path: "{{project_path}}/venv"
+
+
+# Queue
+rabbit_namespace: "mbcore_vhost_{{stack_name}}"
+rabbit_user: picker
+rabbit_admin_user: admin
+rabbit_admin_password: admin
+rabbit_password: MBc0r3
+rabbit_port: 5672
+redis_port: 6379
+redis_namespace: 0
+queue_host: queue.pickerint.net
+redis_host: queue.pickerint.net
