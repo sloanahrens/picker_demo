@@ -3,6 +3,8 @@ from django.conf.urls import url
 from tickers.views import TestPageView, PickerPageView, TickersLoadedView, SearchTickerDataView, \
     GetRecommendationsView, AddTickerView
 
+app_name='tickers'
+
 urlpatterns = [
 
     url(r'^$', PickerPageView.as_view(), name='picker_page'),

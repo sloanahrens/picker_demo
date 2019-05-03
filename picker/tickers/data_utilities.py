@@ -1,7 +1,7 @@
 import os
 from datetime import datetime, timedelta
 
-from slugify import slugify as _slugify
+from slugify import slugify
 # from ystockquote import get_historical_prices
 
 from pandas_datareader import data as web
@@ -30,7 +30,7 @@ WEEKS_TO_DOWNLOAD = 260
 
 MOVING_AVERAGE_WEEKS = 86
 
-INDEX_TICKERS = ['SPY']
+INDEX_TICKER = 'SPY'
 
 STARTING_TICKERS = ['GOOGL', 'AMZN', 'AAPL']
 
@@ -51,8 +51,8 @@ QUOTES_MAPPING_PROPERTIES = {
             "format": "dateOptionalTime"
         },
         "day_of_week": {
-            "type": "string",
-            "index": "not_analyzed"
+            "type": "keyword",
+            "index": False
         },
         "high": {
             "type": "double"
@@ -64,8 +64,12 @@ QUOTES_MAPPING_PROPERTIES = {
             "type": "double"
         },
         "quote_id": {
-            "type": "string",
-            "index": "not_analyzed"
+            "type": "keyword",
+            "index": False
+        },
+        "symbol": {
+            "type": "keyword",
+            "index": True
         },
         "volume": {
             "type": "long"
@@ -85,26 +89,28 @@ def load_latest_picker_data(es_client=None):
     if es_client is None:
         es_client = Elasticsearch(hosts=[settings.ES_HOST])
 
-    create_index(es_client, LOG_INDEX_NAME, create_request_body={
-        "settings": {
-            "number_of_shards": 1,
-            "number_of_replicas": 0
-        },
-        "mappings": {
-            "log": {
-                "properties": {
-                    "update_date": {
-                        "type": "date",
-                        "format": "yyyy-MM-dd HH:mm:ss"
-                    },
-                    "latest_data_date": {
-                        "type": "date",
-                        "format": "yyyy-MM-dd"
-                    }
-                }
-            }
-        }
-    })
+    # create_index(es_client, LOG_INDEX_NAME, create_request_body={
+    #     "settings": {
+    #         "number_of_shards": 1,
+    #         "number_of_replicas": 0
+    #     },
+    #     "mappings": {
+    #         "log": {
+    #             "properties": {
+    #                 "update_date": {
+    #                     "type": "date",
+    #                     "format": "yyyy-MM-dd HH:mm:ss"
+    #                 },
+    #                 "latest_data_date": {
+    #                     "type": "date",
+    #                     "format": "yyyy-MM-dd"
+    #                 }
+    #             }
+    #         }
+    #     }
+    # })
+
+    create_index(es_client, LOG_INDEX_NAME)
 
     build_tickers_index(es_client, TICKERS_FILE)
 
@@ -114,7 +120,6 @@ def load_latest_picker_data(es_client=None):
 def search_ticker_data(es_client, ticker, es_request_body):
 
     es_res = es_client.search(index=DAILY_ANALYTICS_INDEX_NAME,
-                              doc_type=ticker,
                               body=es_request_body)
 
     res_data = [{
@@ -148,7 +153,6 @@ def search_ticker_data(es_client, ticker, es_request_body):
 def get_tickerlist(es_client):
 
     es_res = es_client.search(index=TICKER_SYMBOLS_INDEX_NAME,
-                              doc_type='ticker',
                               body={
                                   "size": 1000,
                                   "query": {"match_all": {}},
@@ -165,7 +169,7 @@ def add_ticker(es_client, ticker):
         # raise Exception('Test Exception')
         add_new_ticker(es_client, ticker.upper())
         return {'success': True}
-    except Exception, e:
+    except Exception as e:
         return {'success': False, 'msg': str(e)}
 
 
@@ -281,13 +285,14 @@ def get_recommendations(es_client):
 
 ### Utility
 
-def slugify(str):
-    return _slugify((unicode(str)))
-
-
-def get_index_dict(es_client, index_name, doc_type, doc_count, query_body):
+def get_index_dict(es_client, index_name, query_body):
+    res = es_client.search(index=DAILY_QUOTES_INDEX_NAME, body={"query": {"term": {"symbol": 'SPY'}}})
+    # print(res)
+    doc_count = res["hits"]["total"]["value"]
+    print('doc_count: ', doc_count)
     data_dict = {}
-    res = es_client.search(index=index_name, doc_type=doc_type, size=doc_count, body={
+    res = es_client.search(index=index_name, body={
+        "size": doc_count,
         "query": query_body
     })
     for hit in res["hits"]["hits"]:
@@ -295,17 +300,10 @@ def get_index_dict(es_client, index_name, doc_type, doc_count, query_body):
     return data_dict
 
 
-def get_index_doc_count(es_client, index_name, doc_type):
-    res = es_client.search(index=index_name, doc_type=doc_type, size=0, body={"query": {"match_all": {}}})
-    doc_count = res["hits"]["total"]
-    return doc_count
-
-
-def add_bulk_insert_doc_to_list(bulk_data, index_name, type_name, doc, doc_id=None):
+def add_bulk_insert_doc_to_list(bulk_data, index_name, doc, doc_id=None):
     op_dict = {
         "index": {
-            "_index": index_name,
-            "_type": type_name
+            "_index": index_name
         }
     }
     if doc_id:
@@ -320,15 +318,15 @@ def create_index(es_client, index_name, create_request_body=None):
         print("deleting '%s'" % (index_name))
         es_client.indices.delete(index=index_name)
 
-    if create_request_body is None:
-        create_request_body = {
-            "settings": {
-                "index": {
-                    "number_of_shards": INDEX_SHARDS,
-                    "number_of_replicas": INDEX_REPLICAS
-                }
-            }
-        }
+    # if create_request_body is None:
+    #     create_request_body = {
+    #         "settings": {
+    #             "index": {
+    #                 "number_of_shards": INDEX_SHARDS,
+    #                 "number_of_replicas": INDEX_REPLICAS
+    #             }
+    #         }
+    #     }
 
     # create index
     print("creating '%s'" % (index_name))
@@ -345,20 +343,18 @@ def build_tickers_index(es_client, file_path=None):
     create_index(es_client, TICKER_SYMBOLS_INDEX_NAME)
 
     print('adding mapping for %s' % 'ticker')
-    res = es_client.indices.put_mapping(index=TICKER_SYMBOLS_INDEX_NAME, doc_type='ticker', body={
-        'ticker': {
-            "properties": {
-                "added": {
-                    "type": "date",
-                    "format": "dateOptionalTime"
-                },
-                "is_index": {
-                    "type": "boolean"
-                },
-                "symbol": {
-                    "type": "string",
-                    "index": "not_analyzed"
-                }
+    res = es_client.indices.put_mapping(index=TICKER_SYMBOLS_INDEX_NAME, body={
+        "properties": {
+            "added": {
+                "type": "date",
+                "format": "dateOptionalTime"
+            },
+            "is_index": {
+                "type": "boolean"
+            },
+            "symbol": {
+                "type": "keyword",
+                "index": True
             }
         }
     })
@@ -367,7 +363,7 @@ def build_tickers_index(es_client, file_path=None):
 
     bulk_data = []
 
-    ticker_list = [t for t in INDEX_TICKERS]
+    ticker_list = ['SPY']
 
     if file_path and os.path.exists(file_path):
         with open(file_path, 'r') as f:
@@ -379,13 +375,12 @@ def build_tickers_index(es_client, file_path=None):
     for symbol in ticker_list:
         ticker_doc = {
             'symbol': symbol,
-            'is_index': symbol in INDEX_TICKERS,
+            'is_index': symbol == 'SPY',
             'added': today
         }
 
         add_bulk_insert_doc_to_list(bulk_data=bulk_data,
                                     index_name=TICKER_SYMBOLS_INDEX_NAME,
-                                    type_name='ticker',
                                     doc=ticker_doc,
                                     doc_id=symbol.lower())
 
@@ -400,16 +395,14 @@ def build_quotes_index(es_client):
     create_index(es_client, DAILY_ANALYTICS_INDEX_NAME)
 
     es_res = es_client.search(index=TICKER_SYMBOLS_INDEX_NAME,
-                              doc_type='ticker',
                               body={"size": 1000, "query": {"match_all": {}}})
     tickers = [t['_source']['symbol'] for t in es_res['hits']['hits']]
 
-    add_ticker_data(es_client, INDEX_TICKERS[0])
+    add_ticker_data(es_client, 'SPY')
 
-    sorted_price_index_docs = get_sorted_index_docs(es_client, INDEX_TICKERS[0])
+    sorted_price_index_docs = get_sorted_index_docs(es_client)
 
     es_res = es_client.search(index=DAILY_QUOTES_INDEX_NAME,
-                              doc_type=INDEX_TICKERS[0].lower(),
                               body={
                                   "size": 1,
                                   "query": {"match_all": {}},
@@ -422,45 +415,38 @@ def build_quotes_index(es_client):
         'latest_data_date': latest_data_date
     }
     es_client.index(index=LOG_INDEX_NAME,
-                    doc_type='log',
                     body=log_doc,
                     refresh=True)
 
     for symbol in tickers:
         try:
             add_ticker_data(es_client, symbol, sorted_price_index_docs)
-        except Exception, e:
+        except Exception as e:
             print(e)
 
 
 def add_new_ticker(es_client, symbol):
-    add_ticker_data(es_client, INDEX_TICKERS[0])
+    add_ticker_data(es_client, 'SPY')
 
-    sorted_price_index_docs = get_sorted_index_docs(es_client, INDEX_TICKERS[0])
+    sorted_price_index_docs = get_sorted_index_docs(es_client)
 
     add_ticker_data(es_client, symbol, sorted_price_index_docs)
 
     ticker_doc = {
         'symbol': symbol,
-        'is_index': symbol in INDEX_TICKERS,
+        'is_index': False,
         'added': datetime.now().strftime('%Y-%m-%d')
     }
     es_client.index(index=TICKER_SYMBOLS_INDEX_NAME,
-                    doc_type='ticker',
                     id=symbol.lower(),
                     body=ticker_doc,
                     refresh=True)
 
 
-def get_sorted_index_docs(es_client, index_symbol):
-    price_index_type = index_symbol.lower()
-    # print(price_index_type)
-    price_index_doc_count = get_index_doc_count(es_client, DAILY_QUOTES_INDEX_NAME, price_index_type)
+def get_sorted_index_docs(es_client):
     price_index_doc_dict = get_index_dict(es_client=es_client,
                                           index_name=DAILY_QUOTES_INDEX_NAME,
-                                          doc_type=price_index_type,
-                                          doc_count=price_index_doc_count,
-                                          query_body={"match_all": {}})
+                                          query_body={"term": {"symbol": "SPY"}})
     sorted_price_index_docs = [price_index_doc_dict[key] for key in sorted(price_index_doc_dict.keys())]
     # print(price_index_doc_count, len(price_index_doc_dict))
     # pprint(sorted(price_index_doc_dict.keys()))
@@ -522,6 +508,7 @@ def add_ticker_data(es_client, symbol, sorted_price_index_docs=None):
         day_of_week = WEEKDAYS[datetime(*date_split).weekday()]
         # print('%s, %s, %s' % (date, quote_id, day_of_week))
         quote_doc = {
+            'symbol': symbol,
             'quote_id': quote_id,
             'date': date,
             'day_of_week': day_of_week
@@ -532,17 +519,15 @@ def add_ticker_data(es_client, symbol, sorted_price_index_docs=None):
 
         add_bulk_insert_doc_to_list(bulk_data=bulk_data,
                                     index_name=DAILY_QUOTES_INDEX_NAME,
-                                    type_name=type_name,
                                     doc=quote_doc,
                                     doc_id=quote_id)
 
     # print('adding mapping for %s' % type_name)
-    res = es_client.indices.put_mapping(index=DAILY_QUOTES_INDEX_NAME, doc_type=type_name, body={
-        type_name: QUOTES_MAPPING_PROPERTIES
-    })
+    res = es_client.indices.put_mapping(index=DAILY_QUOTES_INDEX_NAME, body=QUOTES_MAPPING_PROPERTIES)
 
     print('bulk indexing into %s' % (DAILY_QUOTES_INDEX_NAME))
     res = es_client.bulk(index=DAILY_QUOTES_INDEX_NAME, body=bulk_data, refresh=True)
+    # print(res)
     # for line in res["items"]:
     #     print(line)
     if res['errors'] > 0:
@@ -565,12 +550,9 @@ def add_ticker_data(es_client, symbol, sorted_price_index_docs=None):
     # print('analytics begins: %s' % analytics_start_date)
 
     type_name = symbol.lower()
-    doc_count = get_index_doc_count(es_client, DAILY_QUOTES_INDEX_NAME, type_name)
     doc_dict = get_index_dict(es_client=es_client,
                               index_name=DAILY_QUOTES_INDEX_NAME,
-                              doc_type=type_name,
-                              doc_count=doc_count,
-                              query_body={"match_all": {}})
+                              query_body={"term": {"symbol": symbol}})
     # print(doc_count, len(doc_dict))
     # pprint(sorted(doc_dict.keys()))
     sorted_docs = [doc_dict[key] for key in sorted(doc_dict.keys())]
@@ -638,7 +620,7 @@ def add_ticker_data(es_client, symbol, sorted_price_index_docs=None):
         bulk_data_list.append(analytics_doc)
 
     # print('adding mapping for %s' % type_name)
-    # res = es_client.indices.put_mapping(index=DAILY_QUOTES_INDEX_NAME, doc_type=type_name, body={
+    # res = es_client.indices.put_mapping(index=DAILY_QUOTES_INDEX_NAME, body={
     #     type_name: QUOTES_MAPPING_PROPERTIES
     # })
 
@@ -656,7 +638,6 @@ def add_ticker_data(es_client, symbol, sorted_price_index_docs=None):
         quote_id = '%s-%s' % (symbol, analytics_doc['date'])
         add_bulk_insert_doc_to_list(bulk_data=bulk_data,
                                     index_name=DAILY_ANALYTICS_INDEX_NAME,
-                                    type_name=type_name,
                                     doc=analytics_doc,
                                     doc_id=quote_id)
 
@@ -678,7 +659,6 @@ def add_ticker_data(es_client, symbol, sorted_price_index_docs=None):
 
         # doc_count = get_index_doc_count(es_client, DAILY_ANALYTICS_INDEX_NAME, type_name)
         # es_res = es_client.search(index=DAILY_ANALYTICS_INDEX_NAME,
-        #                           doc_type=type_name,
         #                           body={
         #                             "from": 0,
         #                             "size": doc_count,
