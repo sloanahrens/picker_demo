@@ -1,6 +1,6 @@
 certifi==2019.3.9
 chardet==3.0.4
-Django==2.2.1
+Django==2.2.8
 djangorestframework==3.9.3
 elasticsearch==7.0.0
 fix-yahoo-finance==0.1.33
