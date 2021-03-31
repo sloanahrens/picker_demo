@@ -5,7 +5,7 @@ djangorestframework==3.9.3
 elasticsearch==7.0.0
 fix-yahoo-finance==0.1.33
 idna==2.7
-lxml==4.3.3
+lxml==4.6.3
 multitasking==0.0.7
 numpy==1.16.3
 pandas==0.24.2
